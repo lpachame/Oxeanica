@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pulso Oxean</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F1F3F2;min-height:100vh;display:flex;justify-content:center;padding:1.5rem 1rem 3rem;color:#20262A;}
+.app{max-width:440px;width:100%;}
+.header{margin-bottom:1.4rem;padding-top:.5rem;}
+.logo{font-size:20px;font-weight:600;letter-spacing:.05em;color:#20262A;}
+.tagline{font-size:12.5px;color:#68757A;margin-top:4px;line-height:1.5;}
+.tab-row{display:flex;gap:8px;margin-bottom:1.4rem;}
+.tab{flex:1;padding:10px 0;border-radius:24px;border:1px solid #DCE3E0;background:#fff;cursor:pointer;font-size:13px;color:#68757A;text-align:center;font-family:inherit;transition:all .15s;}
+.tab.active{background:#1F6F63;border-color:#1F6F63;color:#fff;font-weight:500;}
+.card{background:#fff;border-radius:18px;padding:1.6rem;box-shadow:0 1px 4px rgba(32,38,42,.06);}
+.screen{display:none;}
+.screen.active{display:block;}
+.sub{font-size:13px;color:#68757A;line-height:1.6;margin-bottom:1.5rem;}
+.q{margin-bottom:1.3rem;}
+.ql{font-size:14.5px;font-weight:500;color:#20262A;margin-bottom:2px;}
+.qh{font-size:11.5px;color:#8B969A;margin-bottom:10px;}
+.sr{display:flex;align-items:center;gap:12px;}
+input[type=range]{flex:1;-webkit-appearance:none;height:4px;border-radius:2px;background:linear-gradient(to right,#1F6F63 var(--val,44%),#E4E9E7 var(--val,44%));outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#1F6F63;cursor:pointer;box-shadow:0 2px 6px rgba(32,38,42,.25);}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#1F6F63;cursor:pointer;border:none;}
+.snum{font-size:16px;font-weight:600;color:#1F6F63;width:26px;text-align:center;}
+.btn{width:100%;padding:13px 0;border-radius:12px;border:none;background:#1F6F63;color:#fff;font-size:14.5px;font-weight:500;cursor:pointer;font-family:inherit;margin-top:.4rem;}
+.btn:active{filter:brightness(.92);}
+.btn:disabled{opacity:.6;cursor:default;}
+.thanks{text-align:center;padding:1.5rem 0;}
+.thanks-icon{font-size:34px;margin-bottom:.8rem;}
+.thanks-title{font-size:17px;font-weight:600;margin-bottom:6px;}
+.thanks-sub{font-size:13px;color:#68757A;line-height:1.6;}
+.gate-sub{font-size:12.5px;color:#68757A;line-height:1.6;margin-bottom:1.2rem;}
+.gate-card input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #DCE3E0;font-size:15px;font-family:inherit;margin-bottom:12px;outline:none;color:#20262A;}
+.gate-card input:focus{border-color:#B9822E;}
+.gate-err{font-size:12px;color:#B0473F;margin-top:8px;min-height:16px;}
+.summary{display:flex;gap:10px;margin-bottom:1.3rem;}
+.sc{flex:1;background:#F7F8F7;border-radius:14px;padding:12px 8px;text-align:center;border:1px solid #EBEEEC;}
+.sc-val{font-size:19px;font-weight:600;color:#20262A;}
+.sc-lbl{font-size:9.5px;color:#8B969A;margin-top:3px;text-transform:uppercase;letter-spacing:.04em;}
+.count{font-size:12px;color:#8B969A;text-align:center;margin-bottom:1.2rem;}
+.varpick{display:flex;align-items:center;gap:8px;margin-bottom:1rem;}
+.varpick label{font-size:12px;color:#8B969A;}
+.varpick select{flex:1;padding:8px 10px;border-radius:10px;border:1px solid #DCE3E0;background:#fff;color:#20262A;font-size:13px;font-family:inherit;outline:none;}
+.chart-wrap{position:relative;width:100%;height:200px;margin-bottom:.8rem;}
+.note{font-size:11.5px;color:#8B969A;line-height:1.6;margin-top:.6rem;}
+.empty{background:#F7F8F7;border:1px solid #EBEEEC;border-radius:14px;padding:1.2rem;text-align:center;font-size:13px;color:#68757A;line-height:1.6;}
+.setup-warn{background:#FBEFE9;border:1px solid #F0D9CB;border-radius:14px;padding:14px 16px;font-size:12.5px;color:#8A4A2E;line-height:1.6;margin-top:1rem;}
+[hidden]{display:none !important;}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header">
+<div class="logo">Pulso Oxean</div>
+<div class="tagline">Un check-in rápido y anónimo del equipo.</div>
+</div>
+
+<div class="tab-row">
+<button class="tab active" id="tabbtn-pulso" onclick="showTab('pulso')">Pulso</button>
+<button class="tab" id="tabbtn-resultados" onclick="showTab('resultados')">Resultados</button>
+</div>
+
+<!-- PULSO -->
+<div class="screen active" id="tab-pulso">
+<div class="card">
+
+<div id="pulso-form">
+<div class="sub">No se guarda tu nombre ni ningún dato que te identifique. Responder toma menos de un minuto.</div>
+
+<div class="q">
+<div class="ql">Carga de trabajo</div>
+<div class="qh">¿Qué tan manejable fue tu carga de trabajo esta semana?</div>
+<div class="sr"><input type="range" min="1" max="10" value="5" id="p1" oninput="upd(this,'n1')"><span class="snum" id="n1">5</span></div>
+</div>
+
+<div class="q">
+<div class="ql">Claridad</div>
+<div class="qh">¿Qué tan claro tenés qué se espera de vos?</div>
+<div class="sr"><input type="range" min="1" max="10" value="5" id="p2" oninput="upd(this,'n2')"><span class="snum" id="n2">5</span></div>
+</div>
+
+<div class="q">
+<div class="ql">Ánimo</div>
+<div class="qh">¿Cómo fue tu ánimo general esta semana?</div>
+<div class="sr"><input type="range" min="1" max="10" value="5" id="p3" oninput="upd(this,'n3')"><span class="snum" id="n3">5</span></div>
+</div>
+
+<div class="q">
+<div class="ql">Apoyo del equipo</div>
+<div class="qh">¿Sentís apoyo de tus compañeros y líderes?</div>
+<div class="sr"><input type="range" min="1" max="10" value="5" id="p4" oninput="upd(this,'n4')"><span class="snum" id="n4">5</span></div>
+</div>
+
+<button class="btn" id="submitbtn" onclick="submitPulso()">Enviar respuesta</button>
+<div class="gate-err" id="submit-err"></div>
+</div>
+
+<div class="thanks" id="pulso-thanks" hidden>
+<div class="thanks-icon">✓</div>
+<div class="thanks-title">Gracias</div>
+<div class="thanks-sub">Tu respuesta quedó registrada de forma anónima.<br>Podés volver a responder la próxima semana.</div>
+</div>
+
+</div>
+</div>
+
+<!-- RESULTADOS -->
+<div class="screen" id="tab-resultados">
+<div class="card">
+
+<div id="res-gate">
+<div class="gate-sub">Los resultados son promedios del equipo, nunca respuestas individuales. Ingresá la contraseña para verlos.</div>
+<input type="password" id="respass" autocomplete="current-password" placeholder="Contraseña">
+<button class="btn" onclick="unlockResults()">Ver resultados</button>
+<div class="gate-err" id="res-err"></div>
+</div>
+
+<div id="res-content" hidden>
+<div class="count" id="res-count"></div>
+<div class="summary" id="res-summary"></div>
+<div class="varpick">
+<label for="vsel">Mostrar</label>
+<select id="vsel" onchange="renderChart()">
+<option value="overall">Promedio general</option>
+<option value="workload">Carga de trabajo</option>
+<option value="clarity">Claridad</option>
+<option value="mood">Ánimo</option>
+<option value="support">Apoyo del equipo</option>
+</select>
+</div>
+<div class="chart-wrap" id="chartwrap"><canvas id="rc"></canvas></div>
+<div id="res-empty" class="empty" hidden>Todavía no hay suficientes respuestas para mostrar una tendencia. Se necesitan al menos 3 por semana.</div>
+<div class="note">Solo se muestran semanas con 3 respuestas o más, para proteger el anonimato.</div>
+</div>
+
+</div>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// Reemplazá esto por la URL de TU propio deployment de Apps Script (termina en /exec).
+const API = 'REEMPLAZAR_CON_TU_URL_DE_APPS_SCRIPT';
+const KEYSTORE = 'pulso_oxean_key';
+
+const METRICS = ['workload','clarity','mood','support'];
+const METRIC_LABELS = {workload:'Carga de trabajo',clarity:'Claridad',mood:'Ánimo',support:'Apoyo del equipo',overall:'Promedio general'};
+const COLORS = {workload:'#1F6F63',clarity:'#B9822E',mood:'#3E6FB0',support:'#7A5AA6',overall:'#20262A'};
+
+let resultsData = null;
+let key = localStorage.getItem(KEYSTORE) || '';
+
+function upd(el,nid){ document.getElementById(nid).textContent = el.value; }
+
+function showTab(name){
+document.getElementById('tabbtn-pulso').classList.toggle('active', name==='pulso');
+document.getElementById('tabbtn-resultados').classList.toggle('active', name==='resultados');
+document.getElementById('tab-pulso').classList.toggle('active', name==='pulso');
+document.getElementById('tab-resultados').classList.toggle('active', name==='resultados');
+if(name==='resultados' && key && !resultsData){
+tryLoadResults();
+}
+}
+
+function apiConfigured(){
+return API && API.indexOf('REEMPLAZAR') === -1;
+}
+
+async function apiCall(payload){
+const r = await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
+const txt = await r.text();
+try{ return JSON.parse(txt); }
+catch(e){ return {ok:false,message:'Respuesta inválida del servidor.'}; }
+}
+
+async function submitPulso(){
+const errEl = document.getElementById('submit-err');
+errEl.textContent = '';
+if(!apiConfigured()){
+errEl.textContent = 'Todavía no configuraste el backend (falta la URL de tu Apps Script en el código).';
+return;
+}
+const entry = {
+workload: +document.getElementById('p1').value,
+clarity: +document.getElementById('p2').value,
+mood: +document.getElementById('p3').value,
+support: +document.getElementById('p4').value
+};
+const btn = document.getElementById('submitbtn');
+btn.disabled = true;
+btn.textContent = 'Enviando...';
+try{
+const res = await apiCall({action:'save', entry:entry});
+if(res && res.ok){
+document.getElementById('pulso-form').hidden = true;
+document.getElementById('pulso-thanks').hidden = false;
+}else{
+errEl.textContent = (res && res.message) ? res.message : 'No se pudo enviar. Probá de nuevo en un momento.';
+btn.disabled = false;
+btn.textContent = 'Enviar respuesta';
+}
+}catch(e){
+errEl.textContent = 'No se pudo conectar con el servidor.';
+btn.disabled = false;
+btn.textContent = 'Enviar respuesta';
+}
+}
+
+async function unlockResults(){
+const v = document.getElementById('respass').value.trim();
+const errEl = document.getElementById('res-err');
+if(!v){ errEl.textContent = 'Ingresá la contraseña.'; return; }
+if(!apiConfigured()){ errEl.textContent = 'Todavía no configuraste el backend.'; return; }
+errEl.textContent = 'Verificando...';
+try{
+const res = await apiCall({key:v, action:'results'});
+if(res && res.ok){
+key = v;
+localStorage.setItem(KEYSTORE, key);
+resultsData = res;
+showResults();
+}else if(res && res.error==='auth'){
+errEl.textContent = 'Contraseña incorrecta.';
+}else{
+errEl.textContent = (res && res.message) ? res.message : 'Hubo un error en el servidor.';
+}
+}catch(e){
+errEl.textContent = 'No se pudo conectar con el servidor.';
+}
+}
+
+async function tryLoadResults(){
+try{
+const res = await apiCall({key:key, action:'results'});
+if(res && res.ok){
+resultsData = res;
+showResults();
+}else{
+key = '';
+localStorage.removeItem(KEYSTORE);
+}
+}catch(e){
+// se queda mostrando el gate, sin romper la pantalla
+}
+}
+
+function showResults(){
+document.getElementById('res-gate').hidden = true;
+document.getElementById('res-content').hidden = false;
+const data = resultsData.data || [];
+document.getElementById('res-count').textContent = 'Respuestas totales: ' + (resultsData.total || 0);
+const last = data[data.length - 1];
+const summaryEl = document.getElementById('res-summary');
+summaryEl.innerHTML = last ? METRICS.map(function(m){
+return '<div class="sc"><div class="sc-val" style="color:'+COLORS[m]+'">'+last[m].toFixed(1)+'</div><div class="sc-lbl">'+shortLabel(m)+'</div></div>';
+}).join('') : '';
+renderChart();
+}
+
+function shortLabel(m){
+return {workload:'Carga',clarity:'Claridad',mood:'Ánimo',support:'Apoyo'}[m];
+}
+
+let chartInst = null;
+function renderChart(){
+const data = (resultsData && resultsData.data) || [];
+const emptyEl = document.getElementById('res-empty');
+const wrapEl = document.getElementById('chartwrap');
+if(data.length === 0){
+emptyEl.hidden = false;
+wrapEl.hidden = true;
+return;
+}
+emptyEl.hidden = true;
+wrapEl.hidden = false;
+const metric = document.getElementById('vsel').value;
+const labels = data.map(function(d){ return d.week_start; });
+const values = data.map(function(d){ return d[metric]; });
+const cv = document.getElementById('rc');
+if(chartInst) chartInst.destroy();
+chartInst = new Chart(cv.getContext('2d'),{
+type:'line',
+data:{ labels:labels, datasets:[{ label:METRIC_LABELS[metric], data:values, borderColor:COLORS[metric], backgroundColor:'transparent', tension:.4, pointRadius:5, pointBackgroundColor:COLORS[metric], pointBorderColor:'#fff', pointBorderWidth:2, borderWidth:2 }] },
+options:{
+responsive:true, maintainAspectRatio:false,
+plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#20262A', padding:10, cornerRadius:8, callbacks:{ label:function(c){ return c.dataset.label+': '+Number(c.parsed.y).toFixed(1); } } } },
+scales:{ y:{ min:1, max:10, ticks:{ stepSize:1, color:'#8B969A' }, grid:{ color:'rgba(32,38,42,.05)' } }, x:{ ticks:{ color:'#8B969A', maxRotation:0, autoSkip:true }, grid:{ display:false } } }
+}
+});
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+document.querySelectorAll('input[type=range]').forEach(function(r){
+r.style.setProperty('--val', (r.value-1)/9*100 + '%');
+r.addEventListener('input', function(){ r.style.setProperty('--val', (r.value-1)/9*100 + '%'); });
+});
+if(!apiConfigured()){
+const warn = document.createElement('div');
+warn.className = 'setup-warn';
+warn.textContent = 'Esta página todavía no está conectada a ninguna planilla: falta reemplazar la URL de tu Apps Script en el código (variable API).';
+document.querySelector('.app').appendChild(warn);
+}
+});
+</script>
+</body>
+</html>
